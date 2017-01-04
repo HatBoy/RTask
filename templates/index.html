@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="3">
+    <title>任务队列</title>
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap.min.css">
+    <!-- 可选的Bootstrap主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/justified-nav.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../static/bootstrap3.3/js/jquery-3.1.1.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="../static/bootstrap3.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="masthead">
+        <h3 class="text-muted">RTask分布式任务监控面板</h3><br>
+        <ul class="nav nav-justified">
+            <li class="active"><a href="{{ url_for('index') }}">任务队列</a></li>
+            <li><a href="{{ url_for('node_lists') }}">工作节点</a></li>
+            <li><a href="{{ url_for('worker_lists') }}">运行进程</a></li>
+            <li><a href="{{ url_for('redis_list') }}">Redis状态</a></li>
+        </ul>
+    </div>
+    <br>
+    <div>
+        <table class="table table-hover table-striped table-bordered" style="text-align: center;">
+            <tr id="ids">
+                <td class="info">{{ task_name }}任务队列</td>
+                <td class="info">{{ taskid_counts }}</td>
+            </tr>
+            <tr id="fails">
+                <td class="danger">{{ task_name }}失败队列</td>
+                <td class="danger">{{ taskfail_counts }}</td>
+            </tr>
+        </table>
+    </div>
+
+
+    <form class="form-inline" style="width:100%">
+        <div class="form-group">
+            <input type="text" class="form-control" name="taskid" id="taskid" placeholder="添加任务"
+                   style="float:left;margin-left:0px; width: 600px;">
+            <button type="button" class="btn btn-info" id="addtask" style="float:left;margin-left:100px;width: 120px;">
+                添加任务
+            </button>
+            <button type="button" class="btn btn-danger"
+                    style="float:left;margin-left:100px;width: 120px;" data-toggle="modal" data-target="#myModal">清空队列
+            </button>
+        </div>
+    </form>
+    <br>
+
+    <table class="table table-hover table-striped table-bordered" style="text-align: center;">
+        {% for taskid in taskid_range %}
+            <tr>
+                <td>{{ taskid }}</td>
+                <td><a href="{{ url_for("taskid_first") }}?taskid={{ taskid }}" style="text-decoration: none; color: #31b0d5">上移</a></td>
+                <td><a href="{{ url_for("taskid_last") }}?taskid={{ taskid }}" style="text-decoration: none; color: #e38d13">下降</a></td>
+                <td><a href="{{ url_for("taskid_delete") }}?taskid={{ taskid }}" style="text-decoration: none; color: red">删除</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">清空队列</h4>
+      </div>
+      <div class="modal-body">
+        <h3 style="color:red" class="glyphicon glyphicon-warning-sign">&nbsp;是否清空队列？</h3>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-info" data-dismiss="modal" style="width: 100px;">取消</button>
+        <button type="button" class="btn btn-danger" id="emptytask" style="width: 100px;">清空</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<script>
+    $(function () {
+        $("#ids").click(function () {
+            window.location = "/index?name=ids";
+        });
+
+        $("#fails").click(function () {
+            window.location = "/index?name=fails";
+        });
+
+
+        $("#addtask").click(function () {
+            taskid = $("#taskid").val()
+            $.ajax({
+                type: "POST",//jquery 请求方式为 get
+                url: "{{ url_for('add_task') }}",//jquery 请求URL
+                data: {'taskid':taskid},
+                dataType: "html",//jquery接受类型 可以 json js html 等数据
+                cache: false,//是否缓存
+                success: function (a) {
+                    window.location = "{{ url_for('index') }}";
+                }
+            });
+        });
+
+        $("#emptytask").click(function () {
+            window.location = "{{ url_for('empty_task') }}";
+        });
+
+    })
+</script>
+</body>
+</html>

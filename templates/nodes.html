@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>工作节点</title>
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap.min.css">
+    <!-- 可选的Bootstrap主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/justified-nav.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../static/bootstrap3.3/js/jquery-3.1.1.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="../static/bootstrap3.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="masthead">
+        <h3 class="text-muted">RTask分布式任务监控面板</h3><br>
+        <ul class="nav nav-justified">
+            <li><a href="{{ url_for('index') }}">任务队列</a></li>
+            <li class="active"><a href="{{ url_for('node_lists') }}">工作节点</a></li>
+            <li><a href="{{ url_for('worker_lists') }}">运行进程</a></li>
+            <li><a href="{{ url_for('redis_list') }}">Redis状态</a></li>
+        </ul>
+    </div>
+    <br>
+
+    <table class="table table-hover table-striped table-bordered" style="text-align: center;">
+        <tr id="ids">
+            <td class="info">节点总数</td>
+            <td class="info">{{ node_nums }}</td>
+            <td class="info">运行</td>
+            <td class="info">{{ run_nodes }}</td>
+            <td class="info">停止</td>
+            <td class="info">{{ stop_nodes }}</td>
+        </tr>
+    </table>
+
+    <div class="row">
+        {% for node in node_list %}
+            <div class="col-md-6">
+                <table class="table table-hover table-striped table-bordered" style="text-align: center;">
+                    <tr>
+                        <td>节点ID</td>
+                        <td colspan="3">{{ node['macid'] }}</td>
+                    </tr>
+                    <tr>
+                        <td>主机名</td>
+                        <td colspan="3">{{ node['hostname'] }}</td>
+                    <tr>
+                        <td>系统</td>
+                        <td colspan="3">{{ node['platform'] }}</td>
+                    <tr>
+                        <td>IP列表</td>
+                        <td colspan="3">{{ node['ips'] }}</td>
+                    <tr>
+                        <td>远程IP</td>
+                        <td colspan="3">{{ node['rpcip'] }}</td>
+                    <tr>
+                        <td>任务数量</td>
+                        <td colspan="3">任务总数&nbsp;:&nbsp;{{ node['task_nums'] }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;运行&nbsp;:&nbsp;{{ node['run_nums'] }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;停止&nbsp;:&nbsp;{{ node['stop_nums'] }}</td>
+                    <tr>
+                        <td>状态</td>
+                        <td colspan="3">{{ node['status_show'] }}</td>
+                    </tr>
+                    <tr>
+                        <td>操作</td>
+                        <td><a href="{{ url_for('node_info') }}?rpcip={{ node['rpcip'] }}"
+                               style="text-decoration: none; color: #31b0d5">查看</a></td>
+                        <td><a href="{{ url_for('node_stop') }}?rpcip={{ node['rpcip'] }}"
+                               style="text-decoration: none; color: #e38d13">停止</a></td>
+                        <td><a href="{{ url_for('node_delete') }}?rpcip={{ node['rpcip'] }}"
+                               style="text-decoration: none; color: red">删除</a></td>
+                    </tr>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+
+</div>
+</body>
+</html>

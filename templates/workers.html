@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>运行进程</title>
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap.min.css">
+    <!-- 可选的Bootstrap主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/justified-nav.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../static/bootstrap3.3/js/jquery-3.1.1.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="../static/bootstrap3.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="masthead">
+        <h3 class="text-muted">RTask分布式任务监控面板</h3><br>
+        <ul class="nav nav-justified">
+            <li><a href="{{ url_for('index') }}">任务队列</a></li>
+            <li><a href="{{ url_for('node_lists') }}">工作节点</a></li>
+            <li class="active"><a href="{{ url_for('worker_lists') }}">运行进程</a></li>
+            <li><a href="{{ url_for('redis_list') }}">Redis状态</a></li>
+        </ul>
+    </div>
+    <br>
+    <table class="table table-hover table-striped table-bordered" style="text-align: center;">
+        <tr id="ids">
+            <td class="info">进程总数</td>
+            <td class="info">{{ task_nums }}</td>
+            <td class="info">运行</td>
+            <td class="info">{{ run_nums }}</td>
+            <td class="info">停止</td>
+            <td class="info">{{ stop_nums }}</td>
+        </tr>
+    </table>
+
+    <form class="form-inline" style="width:100%">
+        <div class="form-group">
+
+            <input type="text" class="form-control" name="task_nums" id="task_nums" placeholder="添加或修改任务数量"
+                   style="float:left;margin-left:0px; width: 300px;">
+            <select class="form-control" id="rpcip" style="float:left;margin-left:60px; width: 200px;">
+                {% for node in node_lists %}
+                    <option value="{{ node['rpcip'] }}">{{ node['hostname'] }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="button" class="btn btn-info" id="addtask_nums"
+                    style="float:left;margin-left:60px;width: 120px;">
+                添加/修改任务
+            </button>
+            <button type="button" class="btn btn-warning"
+                    style="float:left;margin-left:60px;width: 120px;" id="start_alltasks">运行所有任务
+            </button>
+            <button type="button" class="btn btn-danger"
+                    style="float:left;margin-left:60px;width: 120px;" data-toggle="modal" data-target="#myModal">停止所有任务
+            </button>
+        </div>
+    </form>
+
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">停止所有任务</h4>
+                </div>
+                <div class="modal-body">
+                    <h3 style="color:red" class="glyphicon glyphicon-warning-sign">&nbsp;是否停止所有运行中的任务？</h3>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info" data-dismiss="modal" style="width: 100px;">取消</button>
+                    <button type="button" class="btn btn-danger" id="stop_alltasks" style="width: 100px;">停止</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="text-muted">运行进程列表</h3>
+    <table class="table table-hover table-striped table-bordered" style="text-align: center;">
+        <tr>
+            <td>节点ID</td>
+            <td>主机名</td>
+            <td>进程ID</td>
+            <td>远程IP</td>
+            <td>远程IP</td>
+            <td>操作</td>
+        </tr>
+        {% for task in task_lists %}
+            <tr>
+                <td>{{ task['macid'] }}</td>
+                <td>{{ task['hostname'] }}</td>
+                <td>{{ task['task_uuid'] }}</td>
+                <td>{{ task['rpcip'] }}</td>
+                <td>{{ task['status_show'] }}</td>
+                <td>
+                    {% if task['status'] == 'run' %}
+                    <a href="{{ url_for('worker_control') }}?status={{ task['status'] }}&rpcip={{ task['rpcip'] }}&task_uuid={{ task['task_uuid'] }}&page=workers"
+                       style="text-decoration: none; color: red">{{ task['operation'] }}</a>
+                    {% else %}
+                        <a href="{{ url_for('worker_control') }}?status={{ task['status'] }}&rpcip={{ task['rpcip'] }}&task_uuid={{ task['task_uuid'] }}&page=workers"
+                       style="text-decoration: none; color: #31b0d5">{{ task['operation'] }}</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+<script>
+    $(function () {
+        $("#start_alltasks").click(function () {
+            window.location = "{{ url_for('alltasks_start') }}";
+        });
+
+        $("#stop_alltasks").click(function () {
+            window.location = "{{ url_for('alltasks_stop') }}";
+        });
+
+        $("#addtask_nums").click(function () {
+            task_nums = $("#task_nums").val()
+            rpcip = $("#rpcip").val()
+            $.ajax({
+                type: "POST",//jquery 请求方式为 get
+                url: "{{ url_for('start_workers') }}",//jquery 请求URL
+                data: {"rpcip":rpcip, "task_nums":task_nums},
+                dataType: "html",//jquery接受类型 可以 json js html 等数据
+                cache: false,//是否缓存
+                success: function (a) {
+                    window.location = "{{ url_for('worker_lists') }}";
+                }
+            });
+        });
+
+    })
+</script>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>节点状态</title>
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap.min.css">
+    <!-- 可选的Bootstrap主题文件（一般不用引入） -->
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="../static/bootstrap3.3/css/justified-nav.css">
+    <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+    <script src="../static/bootstrap3.3/js/jquery-3.1.1.min.js"></script>
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="../static/bootstrap3.3/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <div class="masthead">
+        <h3 class="text-muted">RTask分布式任务监控面板</h3><br>
+        <ul class="nav nav-justified">
+            <li><a href="{{ url_for('index') }}">任务队列</a></li>
+            <li><a href="{{ url_for('node_lists') }}">工作节点</a></li>
+            <li><a href="{{ url_for('worker_lists') }}">运行进程</a></li>
+            <li class="active"><a href="{{ url_for('redis_list') }}">Redis状态</a></li>
+        </ul>
+    </div>
+
+
+    <h3 class="text-muted">详细信息</h3>
+    <table class="table table-hover table-striped table-bordered" style="text-align: left;">
+        {% if redis_type == 'single' %}
+            {% for key, data in redis_info.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ data }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            {% for host, datas in redis_config.items() %}
+                <tr>
+                    <td colspan="2" style="text-align: center;color: #31b0d5">{{ host }}</td>
+                </tr>
+                {% for key, data in datas.items() %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ data }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </table>
+
+    <h3 class="text-muted">配置信息</h3>
+    <table class="table table-hover table-striped table-bordered" style="text-align: left;">
+        {% if redis_type == 'single' %}
+            {% for key, data in redis_config.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ data }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            {% for host, datas in redis_config.items() %}
+                <tr>
+                    <td colspan="2" style="text-align: center;color: #31b0d5">{{ host }}</td>
+                </tr>
+                {% for key, data in datas.items() %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td>{{ data }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </table>
+
+    <h3 class="text-muted">连接信息</h3>
+    <table class="table table-hover table-striped table-bordered" style="text-align: left;">
+    {% if redis_type == 'single' %}
+        {% for client in redis_clients %}
+            <tr>
+                <td>{{ client }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        {% for host, clients in redis_clients.items() %}
+            <tr>
+                <td colspan="2" style="text-align: center;color: #31b0d5">{{ host }}</td>
+            </tr>
+            {% for client in clients %}
+                    <tr>
+                        <td>{{ client }}</td>
+                    </tr>
+                {% endfor %}
+        {% endfor %}
+    {% endif %}
+    </table>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+pip3 install murmurhash3
+pip3 install redis
+pip3 install huey
+pip3 install psutil
+pip3 install redis-py-cluster
+pip3 install zerorpc
+pip3 install Flask
