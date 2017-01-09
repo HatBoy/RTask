@@ -1,5 +1,5 @@
 # RTask
-## Python3+Huey+Zreorpc+Redis+Flask=RTask 轻量级分布式任务管理系统
+## Python3+Huey+Zerorpc+Redis+Flask=RTask 轻量级分布式任务管理系统
 ### 系统简介:
 只需要将任务执行脚本放在tasks目录或者其他目录，进行简单的配置，即可将任务变成分布式任务，并可通过web界面节点的任务进行监控和控制
 
