@@ -12,6 +12,10 @@ IS_NEXT = True
 NEXT_IDS = 'nextids'
 #任务的模块名和路径
 TASK_MODULE = 'tasks.spider'
+#最大错误次数
+MAX_ERROR_NUMS = 10
+#超过最大错误次数休眠时间
+ERROR_SLEEP = 30*60
 #redis队列数据库配置
 #redis类型，单机redis(single)还是集群redis(cluster)
 QUEUE_REDIS_TYPE = 'single'

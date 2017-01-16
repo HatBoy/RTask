@@ -43,9 +43,9 @@ class RPCServer():
         if self.pwd_check(password):
             try:
                 wc = wcontrol.WorkerCotrol()
-                wc.kill_worker()
+                wc.kill_worker(worker_name=TASK_NAME)
                 self.unregister_tasks()
-                wc.start_worker(worker_nums)
+                wc.start_worker(TASK_NAME, worker_nums)
                 self._start_task(worker_nums)
                 return 'OK'
             except Exception as e:
@@ -57,7 +57,7 @@ class RPCServer():
         if self.pwd_check(password):
             try:
                 wc = wcontrol.WorkerCotrol()
-                wc.kill_worker()
+                wc.kill_worker(worker_name=TASK_NAME)
                 self.unregister_tasks()
                 self.register_host()
                 return 'OK'

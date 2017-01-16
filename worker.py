@@ -31,11 +31,17 @@ if IS_FILTER:
 control_pool = redis.ConnectionPool(host=RTASK_REDIS_HOST, port=RTASK_REDIS_POST, db=RTASK_REDIS_DB, password=RTASK_REDIS_PWD, encoding='utf-8', decode_responses=True)
 control_client = redis.StrictRedis(connection_pool=control_pool)
 
+ERROR_NUMS = 0
+
 @huey.task()
 def run_task(uuid):
+    global ERROR_NUMS
     taskid = None
     while True:
         try:
+            if ERROR_NUMS > MAX_ERROR_NUMS:
+                ERROR_NUMS = 0
+                time.sleep(ERROR_SLEEP)
             status_data = control_client.hget(TASK_NAME+':task_status', uuid)
             status = eval(status_data)['status']
             if status == 'stop':
@@ -62,6 +68,37 @@ def run_task(uuid):
                             task_queues.push(TASK_NAME+':task_ids', id)
                     else:
                         task_queues.push(TASK_NAME+':task_ids', id)
+            ERROR_NUMS = 0
         except Exception as e:
+            ERROR_NUMS += 1
             fail_data = {'taskid':str(taskid), 'error':str(e)}
             task_queues.push(TASK_NAME+':task_fails', fail_data)
+
+def run_task_test(uuid):
+    taskid = None
+    while True:
+        taskid = task_queues.pop(TASK_NAME+':task_ids')
+        if not taskid:
+            time.sleep(30)
+            continue
+        if IS_FILTER and filter_client.is_exist(taskid):
+            continue
+        data = task.main(taskid)
+        print(data.keys())
+        if not data:
+            continue
+        if IS_SAVE:
+            task.save(data)
+        if IS_FILTER:
+            filter_client.add(data[TASK_ID])
+        if IS_NEXT:
+            nextids = data[NEXT_IDS]
+            print(nextids)
+            for id in nextids:
+                if IS_FILTER:
+                    if not filter_client.is_exist(id):
+                        task_queues.push(TASK_NAME+':task_ids', id)
+                else:
+                    task_queues.push(TASK_NAME+':task_ids', id)
+
+#run_task_test('34229028')
